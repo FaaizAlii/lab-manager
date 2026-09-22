@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:; font-src 'self';">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fatima Lab Manager</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="login-overlay" class="login-overlay">
+    <form id="login-form" class="login-box">
+      <h2>Fatima Lab Manager</h2>
+      <label for="login-username">Username</label>
+      <input type="text" id="login-username" readonly>
+      <label for="login-password">Password</label>
+      <input type="password" id="login-password" required autofocus>
+      <div id="login-error" class="login-error"></div>
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <div class="app-shell" id="app-shell" style="display:none">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark"><span></span><span></span></div>
+        <div><strong id="brand-name">Fatima Lab</strong><small>Management Suite</small></div>
+      </div>
+      <nav id="main-nav">
+        <button class="nav-item active" data-page="dashboard"><span class="nav-icon">⌂</span><span>Dashboard</span></button>
+        <button class="nav-item" data-page="entry"><span class="nav-icon">＋</span><span>New Patient</span></button>
+        <button class="nav-item" data-page="patients"><span class="nav-icon">▤</span><span>Patients</span></button>
+        <button class="nav-item" data-page="expenses"><span class="nav-icon">↗</span><span>Expenses</span></button>
+        <button class="nav-item" data-page="doctors"><span class="nav-icon">♡</span><span>Doctors / Ref By</span></button>
+        <button class="nav-item" data-page="reports"><span class="nav-icon">◫</span><span>Doctor Report</span></button>
+      </nav>
+      <div class="sidebar-spacer"></div>
+      <button class="nav-item" data-page="settings"><span class="nav-icon">⚙</span><span>Settings & Backup</span></button>
+      <div class="storage-badge"><i></i><div><strong>Offline & secure</strong><small>Data stays on this computer</small></div></div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div><h1 id="page-title">Dashboard</h1><p id="page-subtitle">Your lab at a glance</p></div>
+        <div class="top-actions"><span id="today-label"></span><button class="primary compact" data-go="entry">＋ New Patient</button></div>
+      </header>
+
+      <div class="content">
+        <section class="page active" id="page-dashboard">
+          <div class="toolbar month-toolbar">
+            <div><label for="dashboard-month">Reporting month</label><input id="dashboard-month" type="month"></div>
+            <button class="secondary" id="dashboard-refresh">Refresh</button>
+          </div>
+          <div class="metric-grid" id="dashboard-metrics"></div>
+          <div class="dashboard-grid">
+            <article class="panel chart-panel">
+              <div class="panel-heading"><div><h2>Paid sales vs expenses</h2><p>Daily activity for the selected month</p></div><div class="legend"><span><i class="paid"></i>Paid</span><span><i class="expense"></i>Expense</span></div></div>
+              <div id="activity-chart" class="bar-chart"></div>
+            </article>
+            <article class="panel quick-panel">
+              <div class="panel-heading"><div><h2>Quick actions</h2><p>Common daily tasks</p></div></div>
+              <button class="quick-action" data-go="entry"><span class="quick-icon teal">＋</span><div><strong>Add patient</strong><small>Auto Lab No and commission</small></div><b>›</b></button>
+              <button class="quick-action" data-go="expenses"><span class="quick-icon coral">↗</span><div><strong>Add expense</strong><small>Record a daily expense</small></div><b>›</b></button>
+              <button class="quick-action" data-go="reports"><span class="quick-icon blue">◫</span><div><strong>Doctor report</strong><small>Patients and payable share</small></div><b>›</b></button>
+            </article>
+          </div>
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Recent patients</h2><p>Always ordered by visit date, not entry time</p></div><button class="text-button" data-go="patients">View all →</button></div>
+            <div class="table-wrap"><table><thead><tr><th>Date</th><th>Lab No</th><th>Patient</th><th>Ref By</th><th class="num">Paid</th><th class="num">Due</th></tr></thead><tbody id="recent-patients"></tbody></table></div>
+          </article>
+          <article class="panel" id="day-detail-panel" hidden>
+            <div class="panel-heading"><div><h2>Day detail: <span id="day-detail-date"></span></h2><p>Patients and expenses recorded on this exact date</p></div><button class="text-button" id="day-detail-close">Close ✕</button></div>
+            <div class="result-line"><strong id="day-detail-totals"></strong></div>
+            <div class="table-wrap"><table><thead><tr><th>Lab No</th><th>Patient</th><th>Ref By</th><th class="num">Paid</th><th class="num">Due</th></tr></thead><tbody id="day-detail-patients"></tbody></table></div>
+            <div class="table-wrap"><table><thead><tr><th>Category</th><th>Description</th><th class="num">Amount</th></tr></thead><tbody id="day-detail-expenses"></tbody></table></div>
+          </article>
+        </section>
+
+        <section class="page" id="page-entry">
+          <form id="patient-form" class="entry-layout" autocomplete="off">
+            <article class="panel form-panel">
+              <div class="panel-heading"><div><h2 id="patient-form-title">New patient record</h2><p>Press Enter to move forward; Enter on Notes saves the record</p></div><span class="shortcut">Ctrl + Enter to save</span></div>
+              <input type="hidden" id="patient-id">
+              <div class="form-grid">
+                <div class="field"><label for="patient-date">Visit date *</label><input id="patient-date" name="date" type="date" required></div>
+                <div class="field lab-field"><label for="patient-lab">Lab No *</label><div class="input-with-badge"><input id="patient-lab" name="labNo" required><span>AUTO</span></div></div>
+                <div class="field wide"><label for="patient-name">Patient name *</label><input id="patient-name" name="patientName" placeholder="Full patient name" required></div>
+                <div class="field wide"><label for="patient-doctor">Referred by *</label><div class="inline-control"><select id="patient-doctor" name="doctorId" required></select><button type="button" class="icon-button" id="quick-add-doctor" title="Add doctor">＋</button></div></div>
+                <div class="field"><label for="patient-fee">Fee *</label><div class="money-input"><span>Rs</span><input id="patient-fee" name="fee" type="number" min="0" step="0.01" required></div></div>
+                <div class="field"><label for="patient-discount">Discount</label><div class="money-input"><span>Rs</span><input id="patient-discount" name="discount" type="number" min="0" step="0.01" value="0"></div></div>
+                <div class="field"><label for="patient-paid">Paid amount</label><div class="money-input"><span>Rs</span><input id="patient-paid" name="paid" type="number" min="0" step="0.01" value="0"></div></div>
+                <div class="field wide"><label for="patient-notes">Notes</label><textarea id="patient-notes" name="notes" rows="3" placeholder="Optional notes"></textarea></div>
+              </div>
+              <div class="form-actions"><button type="button" class="secondary" id="patient-clear">Clear</button><button class="primary save-button" type="submit"><span>✓</span><span id="patient-submit-label">Save patient</span></button></div>
+            </article>
+            <aside class="calculation-card">
+              <div class="calc-heading"><span>Live calculation</span><small>Commission uses paid amount</small></div>
+              <div class="calc-row"><span>Gross fee</span><strong id="calc-fee">Rs 0</strong></div>
+              <div class="calc-row"><span>Discount</span><strong id="calc-discount">Rs 0</strong></div>
+              <div class="calc-row total"><span>Net payable</span><strong id="calc-net">Rs 0</strong></div>
+              <div class="calc-row"><span>Paid</span><strong id="calc-paid">Rs 0</strong></div>
+              <div class="calc-row due"><span>Patient due</span><strong id="calc-due">Rs 0</strong></div>
+              <div class="commission-box"><span>Doctor commission <b id="calc-rate">0%</b></span><strong id="calc-commission">Rs 0</strong><small>Paid × commission rate</small></div>
+            </aside>
+          </form>
+        </section>
+
+        <section class="page" id="page-patients">
+          <article class="panel">
+            <div class="filter-grid">
+              <div class="field search-field"><label for="patient-search">Search</label><input id="patient-search" placeholder="Patient, Lab No or doctor"></div>
+              <div class="field"><label for="patient-month-filter">Month</label><input id="patient-month-filter" type="month"></div>
+              <div class="field"><label for="patient-day-filter">Exact day</label><input id="patient-day-filter" type="date"></div>
+              <div class="field"><label for="patient-doctor-filter">Doctor / Ref By</label><select id="patient-doctor-filter"></select></div>
+              <div class="field"><label for="patient-sort">Sort by</label><select id="patient-sort"><option value="desc">Date: newest first</option><option value="asc">Date: oldest first</option><option value="due">Highest due first</option></select></div>
+              <label class="switch-line small"><span>Pending dues only</span><input id="patient-dues-only" type="checkbox"><i></i></label>
+              <button class="secondary filter-button" id="patients-reset">Reset</button>
+              <button class="primary filter-button" id="patients-export">Export Excel</button>
+            </div>
+            <div class="result-line"><strong id="patient-result-count">0 records</strong><span>Late entries automatically appear in their correct date position.</span></div>
+            <div class="table-wrap tall"><table><thead><tr><th>Date</th><th>Lab No</th><th>Patient</th><th>Ref By</th><th class="num">Fee</th><th class="num">Paid</th><th class="num">Due</th><th class="num">Commission</th><th></th></tr></thead><tbody id="patients-table"></tbody></table></div>
+            <div class="pagination"><button class="secondary compact" id="patients-prev">← Previous</button><span id="patients-page-label">Page 1</span><button class="secondary compact" id="patients-next">Next →</button></div>
+          </article>
+        </section>
+
+        <section class="page" id="page-expenses">
+          <div class="split-layout">
+            <form id="expense-form" class="panel form-panel compact-form" autocomplete="off">
+              <div class="panel-heading"><div><h2 id="expense-form-title">Add expense</h2><p>Store each expense against its actual date</p></div></div>
+              <input type="hidden" id="expense-id">
+              <div class="field"><label for="expense-date">Date *</label><input id="expense-date" type="date" required></div>
+              <div class="field"><label for="expense-amount">Amount *</label><div class="money-input"><span>Rs</span><input id="expense-amount" type="number" min="0.01" step="0.01" required></div></div>
+              <div class="field"><label for="expense-category">Category</label><div class="inline-control"><select id="expense-category"></select><button type="button" class="text-button" id="expense-category-manage">Manage</button></div></div>
+              <div class="field"><label for="expense-description">Description *</label><input id="expense-description" placeholder="What was this expense for?" required></div>
+              <div class="field"><label for="expense-notes">Notes</label><textarea id="expense-notes" rows="2"></textarea></div>
+              <div class="form-actions"><button type="button" class="secondary" id="expense-clear">Clear</button><button type="submit" class="primary" id="expense-submit-label">Save expense</button></div>
+            </form>
+            <article class="panel">
+              <div class="filter-grid expense-filters"><div class="field"><label for="expense-month-filter">Month</label><input id="expense-month-filter" type="month"></div><div class="field search-field"><label for="expense-search">Search</label><input id="expense-search" placeholder="Description or category"></div></div>
+              <div class="result-line"><strong id="expense-total">Rs 0</strong><span id="expense-count">0 expenses</span></div>
+              <div class="table-wrap tall"><table><thead><tr><th>Date</th><th>Category</th><th>Description</th><th class="num">Amount</th><th></th></tr></thead><tbody id="expenses-table"></tbody></table></div>
+            </article>
+          </div>
+          <article class="panel" id="category-manage-panel" hidden>
+            <div class="panel-heading"><div><h2>Expense categories</h2><p>Add new categories or deactivate old ones; deactivating keeps past expenses unchanged</p></div><button class="text-button" id="category-manage-close">Close ✕</button></div>
+            <div class="filter-grid"><div class="field search-field"><label for="category-new-name">New category</label><input id="category-new-name" placeholder="e.g. Rent"></div><button class="primary compact" id="category-add">Add category</button></div>
+            <div class="table-wrap"><table><thead><tr><th>Name</th><th>Status</th><th></th></tr></thead><tbody id="categories-table"></tbody></table></div>
+          </article>
+        </section>
+
+        <section class="page" id="page-doctors">
+          <div class="split-layout doctor-layout">
+            <form id="doctor-form" class="panel form-panel compact-form" autocomplete="off">
+              <div class="panel-heading"><div><h2 id="doctor-form-title">Add doctor / referral</h2><p>Commission is calculated from patient paid amount</p></div></div>
+              <input type="hidden" id="doctor-id">
+              <div class="field"><label for="doctor-name">Name *</label><input id="doctor-name" placeholder="e.g. DR IMRAN" required></div>
+              <div class="field"><label for="doctor-rate">Commission rate *</label><div class="percent-input"><input id="doctor-rate" type="number" min="0" max="100" step="0.01" value="0" required><span>%</span></div></div>
+              <div class="field"><label for="doctor-notes">Notes</label><textarea id="doctor-notes" rows="3"></textarea></div>
+              <label class="switch-line"><span><strong>Active in dropdown</strong><small>Inactive doctors remain in old records</small></span><input id="doctor-active" type="checkbox" checked><i></i></label>
+              <div class="form-actions"><button type="button" class="secondary" id="doctor-clear">Clear</button><button class="primary" type="submit">Save doctor</button></div>
+            </form>
+            <article class="panel">
+              <div class="panel-heading"><div><h2>Doctors & referral sources</h2><p>Add new names or deactivate old ones safely</p></div><span class="pill" id="active-doctor-count">0 active</span></div>
+              <div class="table-wrap tall"><table><thead><tr><th>Name</th><th class="num">Rate</th><th class="num">Patients</th><th class="num">Paid</th><th class="num">Commission</th><th>Status</th><th></th></tr></thead><tbody id="doctors-table"></tbody></table></div>
+            </article>
+          </div>
+        </section>
+
+        <section class="page" id="page-reports">
+          <article class="panel">
+            <div class="filter-grid report-filters">
+              <div class="field"><label for="report-doctor">Doctor / Ref By</label><select id="report-doctor"></select></div>
+              <div class="field"><label for="report-from">From</label><input id="report-from" type="date"></div>
+              <div class="field"><label for="report-to">To</label><input id="report-to" type="date"></div>
+              <button class="primary filter-button" id="report-run">Run report</button>
+            </div>
+          </article>
+          <div class="metric-grid report-metrics" id="report-metrics"></div>
+          <article class="panel">
+            <div class="panel-heading"><div><h2>Patient records</h2><p>Commission below is based only on paid amounts</p></div><button class="secondary compact" id="report-export">Export Excel</button></div>
+            <div class="table-wrap tall"><table><thead><tr><th>Date</th><th>Lab No</th><th>Patient</th><th class="num">Net</th><th class="num">Paid</th><th class="num">Due</th><th class="num">Commission</th></tr></thead><tbody id="report-table"></tbody></table></div>
+          </article>
+        </section>
+
+        <section class="page" id="page-settings">
+          <div class="settings-grid">
+            <form id="settings-form" class="panel form-panel">
+              <div class="panel-heading"><div><h2>Lab settings</h2><p>Configure automatic numbering</p></div></div>
+              <div class="field"><label for="setting-lab-name">Lab name</label><input id="setting-lab-name" required></div>
+              <div class="field"><label for="setting-next-lab">Next automatic Lab No</label><input id="setting-next-lab" type="number" min="1" step="1" required><small>This increases only after a patient is successfully saved.</small></div>
+              <button class="primary" type="submit">Save settings</button>
+            </form>
+            <article class="panel form-panel">
+              <div class="panel-heading"><div><h2>Data & backups</h2><p>Your records are stored in one compact SQLite database</p></div></div>
+              <div class="data-path"><span>Database location</span><code id="database-path"></code></div>
+              <div class="stack-actions"><button class="secondary" id="open-data-folder">Open data folder</button><button class="secondary" id="backup-data">Create backup</button><button class="danger-outline" id="restore-data">Restore backup</button></div>
+              <div class="info-callout"><strong>Automatic protection</strong><p>A dated backup is created automatically and the latest 30 daily backups are retained.</p></div>
+            </article>
+            <form id="change-password-form" class="panel form-panel">
+              <div class="panel-heading"><div><h2>Security</h2><p>Change the login password</p></div></div>
+              <div class="field"><label for="current-password">Current password</label><input id="current-password" type="password" required></div>
+              <div class="field"><label for="new-password">New password</label><input id="new-password" type="password" required></div>
+              <div class="field"><label for="confirm-password">Confirm new password</label><input id="confirm-password" type="password" required></div>
+              <button class="primary" type="submit">Change Password</button>
+            </form>
+            <article class="panel about-card"><div class="brand-mark large"><span></span><span></span></div><div><h2>Fatima Lab Manager</h2><p>Offline desktop edition · Version <span id="app-version">1.0.0</span></p><small>No patient data is sent to the internet.</small></div></article>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <dialog id="confirm-dialog">
+    <div class="dialog-icon">!</div><h2 id="confirm-title">Are you sure?</h2><p id="confirm-message"></p>
+    <div class="dialog-actions"><button class="secondary" id="confirm-cancel">Cancel</button><button class="danger" id="confirm-ok">Delete</button></div>
+  </dialog>
+  <div id="toast-stack" class="toast-stack"></div>
+  <div id="loading-overlay" class="loading-overlay"><div class="loader"></div><span>Preparing your lab workspace…</span></div>
+  <script src="renderer.js"></script>
+</body>
+</html>
